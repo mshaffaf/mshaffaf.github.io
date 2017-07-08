@@ -53,6 +53,7 @@
 
         var realtime = firebase.database().ref('PiCar/realtime');
 
+        /*
         var alldata = firebase.database().ref('PiCar/somedata');
         
         alldata.on('value', function(snap){
@@ -62,29 +63,13 @@
             for(var i = 0; i < dataArray.length; i++)
                 $("#alldata").append(dataArray[i] + '<br>');
             
-//            $("#alldata").html(dataArray);
         });
-
-                      
-            /*
-            const messaging = firebase.messaging();
-            messaging.requestPermission()
-                .then(function(){
-                console.log('Have Permission'); 
-                return messaging.getToken();
-            })
-                .then(function(token){
-                console.log(token);
-            })
-                .catch(function(err){
-               console.log('No Permission');
-            });
             */
-                       
-            google.charts.load('current', {'packages':['gauge']});
-            google.charts.setOnLoadCallback(drawChart);
+        
+        google.charts.load('current', {'packages':['gauge']});
+        google.charts.setOnLoadCallback(drawChart);
 
-            var speed = 1000;
+        var speed = 1000;
         
         function viewAllDetails(){
             $("#dialsdiv").css('display', 'none');
@@ -106,15 +91,15 @@
                 ]);
                 var dataMPH = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['MPH', 0]
+                    ['kph', 0]
                 ]);
                 var dataThrottle = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['Throttle', 0]
+                    ['Throttle %', 0]
                 ]);
                 var dataCoolant = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
-                    ['Coolant Temp', 0]
+                    ['Coolant Temp (F)', 0]
                 ]);
                 var dataAirflow = google.visualization.arrayToDataTable([
                     ['Label', 'Value'],
@@ -129,8 +114,21 @@
                   max:8000
                 };                
 
+                var optionsThrottle = {
+                  width: 300, height: 300,
+                    max:100
+                };                
+                var optionsMPH = {
+                  width: 300, height: 300,
+                    max:240
+                };         
+                var optionsCoolant = {
+                  width: 300, height: 300,
+                    max:300
+                };                
                 var options = {
-                  width: 300, height: 300
+                  width: 300, height: 300,
+                    max:100
                 };                
                 
                 var chartCenter = new google.visualization.Gauge(document.getElementById('charts_center'));
@@ -141,16 +139,47 @@
 
                 chartCenter.draw(dataRPM, optionsCenter);
                 chartLeftTop.draw(dataMPH, options);
-                chartLeftBottom.draw(dataThrottle, options);
+                chartLeftBottom.draw(dataThrottle, optionsThrottle);
                 chartRightTop.draw(dataCoolant, options);
                 chartRightBottom.draw(dataAirflow, options);
                 
                 realtime.on('value', function(snapshot) {
                     
+                    $("#alldata").html("");
+                    data = snapshot.val();
+                    dataArray = data.split(",");
+                    for(var i = 0; i < dataArray.length; i++)
+                    $("#alldata").append(dataArray[i] + '<br>');
+
+                    
+                    
                     var dataArray = snapshot.val().split(',');
-                    for( var i = 0; i < dataArray.length - 1; i++){
-                        data.setValue(i, 1, dataArray[i+1]);
-                        chart.draw(data, options);
+                    
+                    for( var i = 0; i < dataArray.length ; i++){
+                        
+                        if(dataArray[i].startsWith("Engine RPM")){
+                            var temp = dataArray[i].split('=');
+                            dataRPM.setValue(0, 1, temp[1]);
+                            chartCenter.draw(dataRPM, optionsCenter);
+                        }
+                        if(dataArray[i].startsWith("Throttle Position")){
+                            var temp = dataArray[i].split('=');
+                            var tmp = temp[1].split(" ");
+                            dataThrottle.setValue(0, 1, tmp[1]);
+                            chartLeftBottom.draw(dataThrottle, optionsThrottle);
+                        }
+                        if(dataArray[i].startsWith("Vehicle Speed")){
+                            var temp = dataArray[i].split('=');
+                            var tmp = temp[1].split(" ");
+                            dataMPH.setValue(0, 1, tmp[1] * 1.60934);
+                            chartLeftTop.draw(dataMPH, optionsMPH);
+                        }
+                        if(dataArray[i].startsWith("Coolant Temp")){
+                            var temp = dataArray[i].split('=');
+                            var tmp = temp[1].split(" ");
+                            dataCoolant.setValue(0, 1, tmp[1]);
+                            chartRightTop.draw(dataCoolant, optionsCoolant);
+                        }
                     }
                 });
             }        
