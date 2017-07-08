@@ -177,6 +177,7 @@
                         if(dataArray[i].startsWith("Coolant Temp")){
                             var temp = dataArray[i].split('=');
                             var tmp = temp[1].split(" ");
+                            tmp[1] = (tmp[1] - 32) * (5/9);
                             dataCoolant.setValue(0, 1, tmp[1]);
                             chartRightTop.draw(dataCoolant, optionsCoolant);
                         }
