@@ -13,17 +13,11 @@
     user-select: none;
     cursor: default;
 }
-
-/*
- * Card component
- */
 .card {
     background-color: #F7F7F7;
-    /* just in case there no content*/
     padding: 20px 25px 30px;
     margin: 0 auto 25px;
     margin-top: 50px;
-    /* shadows and rounded borders */
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
@@ -41,10 +35,6 @@
     -webkit-border-radius: 50%;
     border-radius: 50%;
 }
-
-/*
- * Form styles
- */
 .profile-name-card {
     font-size: 16px;
     font-weight: bold;
@@ -127,7 +117,6 @@
 .forgot-password {
     color: rgb(104, 145, 162);
 }
-
 .forgot-password:hover,
 .forgot-password:active,
 .forgot-password:focus{
