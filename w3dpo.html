@@ -66,9 +66,10 @@
 </head>
 
 <body>
-
     <div data-role="page" id="splashscreen" class="splashscreen container txt-center">
         <div data-role="main" class="ui-content">
+            <br><br>
+            <br><br>
             <br><br>
             <div id="splashdiv" class="width80">
                 <img src="img/w3dpo.png" alt="ICON" id="logo">
@@ -101,7 +102,7 @@
             <div class="width80">
             <h2 class="center text-white" style="text-align: center">Scoring</h2><br>    
                 <div class="ui-field-contain" id="list-of-teams">
-                    <label for="select-team" class="opensans text-white">Select team:</label>
+                    <label for="select-team" class="opensans text-white">Select team:</label><br><br><br><br>
                 </div>
             </div>
         </div>
@@ -110,6 +111,8 @@
     <div data-role="page" id="judging-rubrics" class="container nopadding">
         <div data-role="main" class="ui-content">
             <br><br><br>
+            <label id="label-juding-team" class="text-white txt-center"></label>
+            <br><br>
             <div class="btnbubble">Criteria 1 : Context & Relevance (Weightage: 20 points) <br>Justification for a proposed project or undertaking on the basis of its expected commercial benefit.</div>
             <input type="number" name="criteria1" id="criteria1" placeholder="Criteria 1 Points">
             <br>
@@ -174,7 +177,7 @@
             
             var AllTeamsArray = [];
             var AllTeamsData;
-            var teamsdata;
+            var teamsdata, doneJudgingArray = [];
             var a,teamToJudge,b,x=0,judgeName = "random";
 
 
@@ -185,10 +188,9 @@
             },2000);
 
             firebase.database().ref('Teams').on("value", function(snap){
-                teamsdata = snap.val();
-                
+                teamsdata = snap.val();                
                 if(teamsdata == null){
-                    alert("no teams registered yet");
+                    alert("0 teams registered.");
                     AllTeamsArray = [];
                 }else{
                     AllTeamsData = teamsdata["AllTeams"]
@@ -200,9 +202,11 @@
                     console.log(AllTeamsArray.length);
                 }
             });
+
             var openJudgingSheet = function(teamName){
                 return function(){
                     teamToJudge = teamName;
+                    $("#label-juding-team").text(teamToJudge);
                     $.mobile.changePage("#judging-rubrics");
                 };
             }
@@ -210,46 +214,60 @@
             $("#btn-admin-login").on("click", function(){
                 var username = $("#login-username").val();
                 var password = $("#login-password").val();
-                firebase.auth().signInWithEmailAndPassword(username + "@gmail.com", password).then(e =>{
-                    alert("Logged in successfully.");
-                    console.log(e.message);
-                    var currentu = firebase.auth().currentUser;
-                    console.log(currentu);
-                    $.mobile.changePage("#register-teams");
-                }).catch(e =>{
-                    console.log(e.message);
-                    $("#error-message").text(e.message);
-                });
+
+                console.log(username.startsWith("s1a"));
+                if(username.startsWith("s1a")){
+                    firebase.auth().signInWithEmailAndPassword(username + "@gmail.com", password).then(e =>{
+                        alert("Logged in successfully.");
+                        console.log(e.message);
+                        var currentu = firebase.auth().currentUser;
+                        console.log(currentu);
+                        $.mobile.changePage("#register-teams");
+                    }).catch(e =>{
+                        console.log(e.message);
+                        $("#error-message").text(e.message);
+                    });
+                } else{
+                    $("#error-message").text("Sorry, you don't have admin rights.");
+                }
             });
 
-
             $("#btn-judge-login").on("click", function(){ 
-
                 var username = $("#login-username").val();
                 var password = $("#login-password").val();
                 firebase.auth().signInWithEmailAndPassword(username + "@gmail.com", password).then(e =>{
                     alert("Logged in successfully.");
-
-                    firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then()
-
                     judgeName = username;
                     console.log(e.message);
-                    var currentu = firebase.auth().currentUser;
-                    console.log(currentu);
-    
-                    $.each(AllTeamsArray, function(i, arrayElement){
-                        var btn = document.createElement("button");
-                        var btnName = arrayElement;
-                        btn.innerHTML = btnName;
-                        btn.id = btnName;
-                        btn.onclick = openJudgingSheet(btnName);
-                        btn.className = "ui-btn";
-                        document.getElementById("list-of-teams").appendChild(btn);
+
+
+
+                    firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then(function(finishedTeams){
+                        console.log(finishedTeams);
+                        if(finishedTeams == null){
+                            console.log(finishedTeams);
+                            doneJudgingArray = [];
+                        }
+                        else{
+                            var doneJudging=finishedTeams.val();
+                            console.log(doneJudging);
+                            doneJudgingArray = doneJudging.split(",");
+                            console.log(doneJudgingArray);
+                        }
                     });
 
-                    alert("added teh items to select");
+                    $.each(AllTeamsArray, function(i, arrayElement){
+                        if(doneJudgingArray.indexOf(arrayElement) == -1){
+                            var btn = document.createElement("button");
+                            var btnName = arrayElement;
+                            btn.innerHTML = btnName;
+                            btn.id = btnName;
+                            btn.onclick = openJudgingSheet(btnName);
+                            btn.className = "ui-btn";
+                            document.getElementById("list-of-teams").appendChild(btn);
+                        }
+                    });
                     $.mobile.changePage("#judging-page");
-                    alert("changed page");
             }).catch(e =>{
                     console.log(e.message);
                     $("#error-message").text(e.message);
@@ -275,21 +293,30 @@
                 var filledcriteria2 = $("#criteria2").val();
                 var filledcriteria3 = $("#criteria3").val();
                 var filledcriteria4 = $("#criteria4").val();
+                var total = (parseFloat(filledcriteria1) + parseFloat(filledcriteria2) + parseFloat(filledcriteria3) + parseFloat(filledcriteria4))/4;
 
-                firebase.database().ref("Scoring/" + judgeName +"/" + teamToJudge).set({
-                    Criteria1: filledcriteria1,
-                    Criteria2: filledcriteria2,
-                    Criteria3: filledcriteria3,
-                    Criteria4: filledcriteria4
-                });
-                firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then(function(snap){
-                    var finished=snap.val();
-                    if(finished == null)
-                        finished = teamToJudge;
-                    else
-                        finished = finished + "," + teamToJudge;
-                    firebase.database().ref("Scoring/" + judgeName + "/finished").set(finished);
-                });
+                if(!filledcriteria1 || !filledcriteria2 || !filledcriteria3 || !filledcriteria4)
+                    alert("Please fill all the scores");
+                else{
+                    firebase.database().ref("Scoring/" + judgeName +"/" + teamToJudge).set({
+                        Criteria1: filledcriteria1,
+                        Criteria2: filledcriteria2,
+                        Criteria3: filledcriteria3,
+                        Criteria4: filledcriteria4,
+                        TotalAverage: total
+                    });
+                    firebase.database().ref("Teams/" + teamToJudge + "/" +judgeName).set(total);
+                    firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then(function(snap){
+                        var finished=snap.val();
+                        if(finished == null)
+                            finished = teamToJudge;
+                        else
+                            finished = finished + "," + teamToJudge;
+                        firebase.database().ref("Scoring/" + judgeName + "/finished").set(finished);
+                        alert("Score for " + teamToJudge + " submitted successfully!");
+                        $.mobile.changePage("#judging-page");
+                    });
+                }
             });
 
             $("#btn-register-team").on("click", function(){
@@ -302,7 +329,6 @@
                     var teamname = $("#team-name").val();
                     var teamcode = $("#team-code").val();
                     var teamcategory = $("#team-category").val();
-                    alert("got all data");
                     var index = AllTeamsArray.indexOf(teamcode);
 
                     if(index == -1){
@@ -332,7 +358,7 @@
                             firebase.database().ref('Teams/AllTeams').set(AllTeams);
                         });
                     }else{
-                        alert("Team already registered.");
+                        alert("Team already exists.");
                     }
                 }
               });
