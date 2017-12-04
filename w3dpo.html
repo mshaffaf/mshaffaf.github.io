@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+
+    <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.7.0/firebase.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Inknut+Antiqua" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <title>W3DPO Judging</title>
+
+    <style>
+        .container{
+            background: #a044ff;
+            background: -webkit-linear-gradient(to top,#0D9547,#105CAF);
+            background: linear-gradient(to top,#0D9547,#105CAF);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            position: fixed;
+            top:0;
+            left:0;
+            width: 98%;
+            height: 100%;
+            padding: 15px;
+        }
+        .opensans{
+            font-family: 'Open Sans', sans-serif;
+        }
+        .text-white{
+            color: white;
+        }
+        .nopadding{
+            padding: 0;
+        }
+        .inknut{
+            font-family: 'Inknut Antiqua', serif;
+        }
+        .btnbubble{
+            border-radius:15px; 
+            border: 0px;
+            padding: 10px;
+            background: #FFF; 
+            display: inline-flex;
+        }
+        #logo{
+            width: 50%;
+        }
+        .width80{
+            width: 85%;
+            display: inline-block;
+        }
+        .txt-center{
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div data-role="page" id="splashscreen" class="splashscreen container txt-center">
+        <div data-role="main" class="ui-content">
+            <br><br>
+            <div id="splashdiv" class="width80">
+                <img src="img/w3dpo.png" alt="ICON" id="logo">
+                <h2 style="color:white;" class="inknut">World 3D Printing Olympiad 2017</h2>
+            </div>
+        </div>
+    </div>
+
+    <div data-role="page" id="login-page" class="container txt-center">
+        <div data-role="main" class="ui-content">
+
+            <div class="width80">
+            <br><br>
+            <p class="text-white opensans">Username:</p>
+            <input type="text" name="login-username" id="login-username">
+            <br>
+            <p class="text-white opensans">Password:</p>
+            <input type="password" name="login-password" id="login-password">
+            <br>
+            <label id="error-message" class="text-white"></label>
+            <br>
+            <button id="btn-judge-login">Log In as Judge</button>
+            <button id="btn-admin-login">Log In as Admin</button>
+        </div>
+        </div> 
+    </div>
+
+    <div data-role="page" id="judging-page" class="container nopadding txt-center">
+        <div data-role="main" class="ui-content">
+            <div class="width80">
+            <h2 class="center text-white" style="text-align: center">Scoring</h2><br>    
+                <div class="ui-field-contain" id="list-of-teams">
+                    <label for="select-team" class="opensans text-white">Select team:</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-role="page" id="judging-rubrics" class="container nopadding">
+        <div data-role="main" class="ui-content">
+            <br><br><br>
+            <div class="btnbubble">Criteria 1 : Context & Relevance (Weightage: 20 points) <br>Justification for a proposed project or undertaking on the basis of its expected commercial benefit.</div>
+            <input type="number" name="criteria1" id="criteria1" placeholder="Criteria 1 Points">
+            <br>
+
+            <div class="btnbubble">Criteria 2 : Efficiency & Feasibility (Weightage: 30 points) <br>Efficiency means ability to do something well without a waste of time or money. <br>Feasibility: Degree of being easily or conveniently done.</div>
+            <input type="number" name="criteria2" id="criteria2" placeholder="Criteria 2 Points">
+            <br>
+
+            <div class="btnbubble">Criteria 3 : Innovation and Creativity (Weightage: 30 points)<br>Creativity is the ability to think and act in ways that are new and novel. There are two kinds of creativity- Innovation & Invention.</div>
+            <input type="number" name="criteria3" id="criteria3" placeholder="Criteria 3 Points">
+            <br>
+
+            <div class="btnbubble">Criteria 4 : Communication and Presentation (Weightage: 20 points)<br>Any project, however innovative or creative, has to be effectively presented to the target audience for them to understand the thought process behind the creation.</div>
+            <input type="number" name="criteria4" id="criteria4" placeholder="Criteria 4 Points">
+            <br>
+
+            <button type="button" id="btn-submit-score">Submit</button> 
+        </div>
+    </div>
+
+    <div data-role="page" id="register-teams" class="container nopadding txt-center">
+        <div data-role="main" class="ui-content">
+            <div class="width80">
+            <h2 class="center text-white" style="text-align: center">Registration</h2><br>
+            <div id="register-form">
+                <p class="text-white opensans">Team Name</p>
+                <input type="text" name="team-name" id="team-name">
+                <br>
+                <p class="text-white opensans">Registration Code</p>
+                <input type="text" name="team-code" id="team-code">
+                <br>
+
+                <div class="ui-field-contain">
+                    <p class="text-white opensans">Category</p>
+                    <select name="team-category" id="team-category" data-native-menu="false">
+                        <option>Choose one...</option>
+                        <option value="Primary">Primary</option>
+                        <option value="Middle">Middle</option>
+                        <option value="Secondary">Secondary</option>
+                    </select>
+                </div>
+                <p id="warning-register" class="text-white opensans" style="visibility: hidden">Please fill all the fields</p>
+                <button type="button" id="btn-register-team">Submit</button>           
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+
+              // Initialize Firebase
+              var config = {
+                apiKey: "AIzaSyDsqLj9PfR_rrZFb3zP65-NNjVe3avdPN8",
+                authDomain: "w3dpo-judging.firebaseapp.com",
+                databaseURL: "https://w3dpo-judging.firebaseio.com",
+                projectId: "w3dpo-judging",
+                storageBucket: "w3dpo-judging.appspot.com",
+                messagingSenderId: "379833480903"
+              };
+              firebase.initializeApp(config);
+            
+            var AllTeamsArray = [];
+            var AllTeamsData;
+            var teamsdata;
+            var a,teamToJudge,b,x=0,judgeName = "random";
+
+
+            setTimeout( function(){
+                if(window.location.hash == ""){
+                    $.mobile.changePage("#login-page");
+                }
+            },2000);
+
+            firebase.database().ref('Teams').on("value", function(snap){
+                teamsdata = snap.val();
+                
+                if(teamsdata == null){
+                    alert("no teams registered yet");
+                    AllTeamsArray = [];
+                }else{
+                    AllTeamsData = teamsdata["AllTeams"]
+                    console.log(AllTeamsData);
+                    if(AllTeamsData.indexOf(',') == -1)
+                        AllTeamsArray = [AllTeamsData];
+                    else
+                        AllTeamsArray = AllTeamsData.split(',');
+                    console.log(AllTeamsArray.length);
+                }
+            });
+            var openJudgingSheet = function(teamName){
+                return function(){
+                    teamToJudge = teamName;
+                    $.mobile.changePage("#judging-rubrics");
+                };
+            }
+
+            $("#btn-admin-login").on("click", function(){
+                var username = $("#login-username").val();
+                var password = $("#login-password").val();
+                firebase.auth().signInWithEmailAndPassword(username + "@gmail.com", password).then(e =>{
+                    alert("Logged in successfully.");
+                    console.log(e.message);
+                    var currentu = firebase.auth().currentUser;
+                    console.log(currentu);
+                    $.mobile.changePage("#register-teams");
+                }).catch(e =>{
+                    console.log(e.message);
+                    $("#error-message").text(e.message);
+                });
+            });
+
+
+            $("#btn-judge-login").on("click", function(){ 
+
+                var username = $("#login-username").val();
+                var password = $("#login-password").val();
+                firebase.auth().signInWithEmailAndPassword(username + "@gmail.com", password).then(e =>{
+                    alert("Logged in successfully.");
+
+                    firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then()
+
+                    judgeName = username;
+                    console.log(e.message);
+                    var currentu = firebase.auth().currentUser;
+                    console.log(currentu);
+    
+                    $.each(AllTeamsArray, function(i, arrayElement){
+                        var btn = document.createElement("button");
+                        var btnName = arrayElement;
+                        btn.innerHTML = btnName;
+                        btn.id = btnName;
+                        btn.onclick = openJudgingSheet(btnName);
+                        btn.className = "ui-btn";
+                        document.getElementById("list-of-teams").appendChild(btn);
+                    });
+
+                    alert("added teh items to select");
+                    $.mobile.changePage("#judging-page");
+                    alert("changed page");
+            }).catch(e =>{
+                    console.log(e.message);
+                    $("#error-message").text(e.message);
+                });
+
+/*
+                andrew
+                royson
+                pallavi
+                phil
+                sreejit
+                issah
+                sanjeera
+                khuram
+                hessa
+                abdulsalam
+                muthanna
+*/
+            });
+
+            $("#btn-submit-score").on("click", function(){
+                var filledcriteria1 = $("#criteria1").val();
+                var filledcriteria2 = $("#criteria2").val();
+                var filledcriteria3 = $("#criteria3").val();
+                var filledcriteria4 = $("#criteria4").val();
+
+                firebase.database().ref("Scoring/" + judgeName +"/" + teamToJudge).set({
+                    Criteria1: filledcriteria1,
+                    Criteria2: filledcriteria2,
+                    Criteria3: filledcriteria3,
+                    Criteria4: filledcriteria4
+                });
+                firebase.database().ref("Scoring/" + judgeName + "/finished").once("value").then(function(snap){
+                    var finished=snap.val();
+                    if(finished == null)
+                        finished = teamToJudge;
+                    else
+                        finished = finished + "," + teamToJudge;
+                    firebase.database().ref("Scoring/" + judgeName + "/finished").set(finished);
+                });
+            });
+
+            $("#btn-register-team").on("click", function(){
+
+                if(!$("#team-name").val() || !$("#team-code").val() || $("#team-category").val() == "Choose one...")
+                    $("#warning-register").css("visibility","initial");
+                else{
+                    $("#warning-register").css("visibility","hidden");
+
+                    var teamname = $("#team-name").val();
+                    var teamcode = $("#team-code").val();
+                    var teamcategory = $("#team-category").val();
+                    alert("got all data");
+                    var index = AllTeamsArray.indexOf(teamcode);
+
+                    if(index == -1){
+                        //increment number
+                        firebase.database().ref('Teams/number').once('value').then(function(snap){
+                            x=snap.val();
+                            ++x;
+                            console.log(x);
+                            firebase.database().ref('Teams/number').set(x);
+                        });
+        
+                        //update team
+                        firebase.database().ref('Teams/'+ teamcode).set({
+                            TeamName: teamname,
+                            TeamCode: teamcode,
+                            TeamCategory: teamcategory
+                        });
+
+                        //update in AllTeams
+                        firebase.database().ref('Teams/AllTeams').once('value').then(function(snap){
+                            var AllTeams = snap.val();
+                            if(AllTeams == null)
+                                AllTeams = teamcode;
+                            else
+                                AllTeams = AllTeams + ',' + teamcode;
+                            console.log(AllTeams);
+                            firebase.database().ref('Teams/AllTeams').set(AllTeams);
+                        });
+                    }else{
+                        alert("Team already registered.");
+                    }
+                }
+              });
+        });
+    </script>
+    <script type="text/javascript" src="js/index.js"></script>
+</body>
+
+</html>
